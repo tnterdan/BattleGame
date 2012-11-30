@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ToggleButton;
  
@@ -26,14 +27,16 @@ public class HostActivity extends Activity {
    //private EditText port;
 
    private TextView ipAddressText;
+   private EditText port;
    private static TextView tv;
 
    // default ip
+   // test comment 123
    public static String SERVERIP = "192.168.1.36";
 
    // designate a port
    protected static final int MSG_ID = 0x1337;
-   public static final int SERVERPORT = 8080;
+   public static int SERVERPORT = 8080;
 
    public boolean firstPress = true;
    
@@ -54,6 +57,7 @@ public class HostActivity extends Activity {
 	    
 	    tv = (TextView) findViewById(R.id.serverStatus);
 	    ipAddressText = (TextView) findViewById(R.id.ipAddress);
+	    port = (EditText) findViewById(R.id.port);
 	    connectBtn = (ToggleButton) findViewById(R.id.toggleServer);
 	   
 		try {
@@ -75,7 +79,8 @@ public class HostActivity extends Activity {
 		        
 		        if (on) {
 		            // Enable vibrate
-		        	ipAddressText.setText("toggle on");
+		        	SERVERPORT = Integer.parseInt(port.getText().toString());
+		        	ipAddressText.setText("Port is " + SERVERPORT);
 		        	if(firstPress) {
 		        	    myCommsThread.start();
 		        	    firstPress = false;

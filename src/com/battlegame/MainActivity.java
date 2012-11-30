@@ -1,6 +1,9 @@
 package com.battlegame;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,6 +12,7 @@ import java.net.UnknownHostException;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
@@ -46,8 +50,22 @@ public class MainActivity extends Activity {
 		  	    try {
 		 	         InetAddress serverAddr = InetAddress.getByName(ipAddress.getText().toString());		 	       
 		 	         socket = new Socket(serverAddr, Integer.parseInt(port.getText().toString()));
-			  	    	connectionString = "Connection successful";
-			  	    	Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
+		 	         connectionString = "Connection successful";
+			  	     Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
+			         try {
+			        	 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
+			        	 out.println("FriendCode/ConnectionSuccess");
+			        	 Log.d("Client", "Client sent message");
+			         } catch (UnknownHostException e) {
+			        	 tv.setText("Unknown Host Exception");
+			        	 e.printStackTrace();
+			         } catch (IOException e) {
+			        	 tv.setText("IO Exception");
+			        	 e.printStackTrace();
+			         } catch (Exception e) {
+			        	 tv.setText("Unknown Exception");
+			        	 e.printStackTrace();
+			         }
 		  	    } catch (UnknownHostException e1) {
 		  	    	connectionString = "Unknown host";
 			        Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();

@@ -23,7 +23,7 @@ public class HostActivity extends Activity {
    static String mClientMsg = "";
    Thread myCommsThread = null;
    private ToggleButton connectBtn;
-   //private EditText port; hello 
+   //private EditText port; hello hello
 
    private TextView ipAddressText;
    private static TextView tv;

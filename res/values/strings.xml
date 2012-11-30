@@ -1,0 +1,19 @@
+<resources>
+
+    <string name="app_name">BattleGame</string>
+    <string name="hello">Please enter the network settings for the opponent you want to connect to.</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="button_text">Connect</string>
+    <string name="host_title">Host Game</string>
+    <string name="port">Port</string>
+    <string name="on">ON</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="host_button">Host Game</string>
+    <string name="ip_address">IP Address</string>
+    <string name="back">Back</string>
+    <string name="title_host_main">HostActivity</string>
+    <string name="title_host_activity">HostActivity</string>
+
+</resources>

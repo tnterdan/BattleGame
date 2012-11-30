@@ -66,6 +66,8 @@ public class HostActivity extends Activity {
 		
 	    tv.setText("Nothing from client yet");
 
+    	myCommsThread = new Thread(new CommsThread());
+
 	    connectBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 		        // Is the toggle on?
@@ -75,7 +77,6 @@ public class HostActivity extends Activity {
 		            // Enable vibrate
 		        	ipAddressText.setText("toggle on");
 		        	if(firstPress) {
-		            	myCommsThread = new Thread(new CommsThread());
 		        	    myCommsThread.start();
 		        	    firstPress = false;
 		        	}
@@ -99,6 +100,8 @@ public class HostActivity extends Activity {
 	        ss.close();
 	    } catch (IOException e) {
 	        e.printStackTrace();
+	    } catch (NullPointerException e) {
+	    	e.printStackTrace();
 	    }
    }
  

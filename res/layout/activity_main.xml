@@ -1,46 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
-
-<TextView 
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/hello"
-    android:id="@+id/myTextView"
-/>
-
-<EditText
-    android:id="@+id/ipAddress"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:ems="10"
-    android:hint="@string/ip_address" >
+    android:layout_height="match_parent"
+    tools:context=".MenuActivity" >
 
-    <requestFocus />
-</EditText>
+    <TextView
+        android:id="@+id/gameTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="53dp"
+        android:text="@string/game_title"
+        tools:context=".MainActivity" />
 
-<EditText
-    android:id="@+id/port"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:ems="10"
-    android:hint="@string/port"
-    android:inputType="number" />
+    <Button
+        android:id="@+id/highScoreButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="29dp"
+        android:text="@string/high_score_button" />
 
-<Button
-    android:id="@+id/sendButton"
-    android:layout_width="80dp"
-    android:layout_height="42dp"
-    android:layout_gravity="center_horizontal"
-    android:text="@string/button_text" />
+    <Button
+        android:id="@+id/friendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/highScoreButton"
+        android:layout_alignLeft="@+id/highScoreButton"
+        android:layout_alignRight="@+id/highScoreButton"
+        android:layout_marginBottom="19dp"
+        android:text="@string/friend_button" />
 
-<Button
-    android:id="@+id/hostButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:text="@string/host_button" />
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/friendButton"
+        android:layout_alignLeft="@+id/friendButton"
+        android:layout_alignRight="@+id/friendButton"
+        android:layout_marginBottom="22dp"
+        android:text="@string/start_button" />
 
-</LinearLayout>
+</RelativeLayout>

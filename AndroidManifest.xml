@@ -19,11 +19,22 @@
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ConnectActivity"
+            android:label="@string/title_activity_main" >
+        </activity>
         <activity android:name=".HostActivity"></activity>
+       <activity 
+           android:name="FriendsActivity"
+           android:label="@string/title_activity_main">
+       </activity>
+       <activity 
+           android:name=".BattleActivity"
+           android:label="@string/title_activity_main">   
+       </activity>
     </application>
 
 </manifest>

@@ -15,5 +15,9 @@
     <string name="back">Back</string>
     <string name="title_host_main">HostActivity</string>
     <string name="title_host_activity">HostActivity</string>
+    <string name="game_title">Mythical Creature Battle Game</string>
+    <string name="start_button">Start</string>
+    <string name="friend_button">Friends</string>
+    <string name="high_score_button">High Scores</string>
 
 </resources>

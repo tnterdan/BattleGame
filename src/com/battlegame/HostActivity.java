@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -110,10 +111,14 @@ public class HostActivity extends Activity {
 	    }
    }
  
-   static Handler myUpdateHandler = new Handler() {
+   Handler myUpdateHandler = new Handler() {
 	    public void handleMessage(Message msg) {
 	        switch (msg.what) {
 	        case MSG_ID:
+	        	if(mClientMsg.equals("ConnectionSuccess/FriendCode")) {
+		        	 Intent i = new Intent(HostActivity.this, CharacterSelectActivity.class);
+		        	 startActivity(i);
+	        	}
 	            tv.setText(mClientMsg);
 	            break;
 	        default:

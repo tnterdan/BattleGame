@@ -19,5 +19,8 @@
     <string name="start_button">Start</string>
     <string name="friend_button">Friends</string>
     <string name="high_score_button">High Scores</string>
+    <string name="character_select_title">Choose a Character</string>
+    <string name="unicorn_name">Unicorn</string>
+    <string name="wyvern_name">Wyvern</string>
 
 </resources>

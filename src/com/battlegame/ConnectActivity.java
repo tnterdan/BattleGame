@@ -54,8 +54,10 @@ public class ConnectActivity extends Activity {
 			  	     Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
 			         try {
 			        	 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-			        	 out.println("FriendCode/ConnectionSuccess");
+			        	 out.println("ConnectionSuccess/FriendCode");
 			        	 Log.d("Client", "Client sent message");
+			        	 Intent i = new Intent(ConnectActivity.this, CharacterSelectActivity.class);
+			        	 startActivity(i);
 			         } catch (UnknownHostException e) {
 			        	 tv.setText("Unknown Host Exception");
 			        	 e.printStackTrace();

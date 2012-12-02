@@ -36,6 +36,12 @@
            android:label="@string/title_activity_main"
            android:screenOrientation="landscape">   
        </activity>
+       <activity
+            android:name=".CharacterSelectActivity"
+            android:label="@string/title_activity_main" >
+       </activity>
+  	  <service android:name=".SocketService"> </service>
+  	  <service android:name=".SocketServerService"> </service>
     </application>
 
 </manifest>

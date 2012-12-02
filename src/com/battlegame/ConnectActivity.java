@@ -10,8 +10,12 @@ import java.net.Socket;
 import java.net.UnknownHostException;
  
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -29,9 +33,10 @@ public class ConnectActivity extends Activity {
 	protected Socket socket;
 
 	// Server vars
-	ServerSocket ss = null;
+   private SocketService mBoundService;
+   private Boolean mIsBound = false;
+
 	String mClientMsg = "";
-	Thread myCommsThread = null;
 	   
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -49,22 +54,24 @@ public class ConnectActivity extends Activity {
 
 		  	    try {
 		 	         InetAddress serverAddr = InetAddress.getByName(ipAddress.getText().toString());		 	       
-		 	         socket = new Socket(serverAddr, Integer.parseInt(port.getText().toString()));
-		 	         connectionString = "Connection successful";
-			  	     Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
+		 	         //socket = new Socket(serverAddr, Integer.parseInt(port.getText().toString()));
+
+		             startService(new Intent(ConnectActivity.this, SocketService.class));
+		         
+		 	         //connectionString = "Connection successful";
+			  	     //Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
 			         try {
-			        	 PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-			        	 out.println("ConnectionSuccess/FriendCode");
+			        	 //PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
+			        	 //out.println("ConnectionSuccess/FriendCode");
 			        	 Log.d("Client", "Client sent message");
-			        	 Intent i = new Intent(ConnectActivity.this, CharacterSelectActivity.class);
-			        	 startActivity(i);
-			         } catch (UnknownHostException e) {
-			        	 tv.setText("Unknown Host Exception");
-			        	 e.printStackTrace();
-			         } catch (IOException e) {
-			        	 tv.setText("IO Exception");
-			        	 e.printStackTrace();
-			         } catch (Exception e) {
+//			         } catch (UnknownHostException e) {
+//			        	 tv.setText("Unknown Host Exception");
+//			        	 e.printStackTrace();
+//			         } catch (IOException e) {
+//			        	 tv.setText("IO Exception");
+//			        	 e.printStackTrace();
+			         }
+			         catch (Exception e) {
 			        	 tv.setText("Unknown Exception");
 			        	 e.printStackTrace();
 			         }
@@ -82,6 +89,11 @@ public class ConnectActivity extends Activity {
 		  	    	Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
 		 	        e1.printStackTrace();
 		  	    }
+		  	    catch (Exception e1) {
+		  	    	connectionString = "Unknown Error";
+		  	    	Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
+		 	        e1.printStackTrace();
+		  	    }
 	         }
 		});
 
@@ -91,5 +103,6 @@ public class ConnectActivity extends Activity {
                 startActivity(nextScreen);
             }
         });
-    }
+        
+	}
 }

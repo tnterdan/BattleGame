@@ -1,45 +1,46 @@
 package com.battlegame;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
-import java.net.Socket;
-
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
  
 // code from http://www.edumobile.org/android/android-development/socket-programming/
+// code from http://stackoverflow.com/questions/3619372/android-service-for-tcp-sockets
 public class HostActivity extends Activity {
-   ServerSocket ss = null;
-   static String mClientMsg = "";
-   Thread myCommsThread = null;
    private ToggleButton connectBtn;
-   //private EditText port; hello hello
 
    private TextView ipAddressText;
    private EditText port;
    private static TextView tv;
+   private Button backBtn;
 
    // default ip
-   // test comment 123
-   public static String SERVERIP = "192.168.1.36";
+   public static String SERVERIP = "192.168.1.101";
 
    // designate a port
-   protected static final int MSG_ID = 0x1337;
-   public static int SERVERPORT = 8080;
+   public static int SERVERPORT = 6666;
 
-   public boolean firstPress = true;
+   Messenger mService = null;
+   boolean mIsBound;
+   final Messenger mMessenger = new Messenger(new IncomingHandler());
    
    public String getLocalIpAddress() {
 	   WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -50,7 +51,53 @@ public class HostActivity extends Activity {
               ((ipAddress >> 16 ) & 0xFF) + "." +
               ((ipAddress >> 24 ) & 0xFF);
 	}
- 
+   
+   class IncomingHandler extends Handler {
+       @Override
+       public void handleMessage(Message msg) {
+           switch (msg.what) {
+               case SocketServerService.MSG_CONNECT_SUCCESS:
+                   //Toast.makeText(getApplicationContext(), "Connection successful!", Toast.LENGTH_SHORT).show();
+                   characterSelect();
+                   break;
+               case SocketServerService.MSG_CHAR_SELECT:
+                   //Toast.makeText(getApplicationContext(), "Characters selected!", Toast.LENGTH_SHORT).show();
+                   break;
+               case SocketServerService.MSG_ATTACK:
+                   //Toast.makeText(getApplicationContext(), "Attack message!", Toast.LENGTH_SHORT).show();
+                   break;
+               default:
+                   super.handleMessage(msg);
+           }
+       }
+   }
+   
+   private void characterSelect() {
+	   Intent intent = new Intent(HostActivity.this, CharacterSelectActivity.class);
+       startActivity(intent);
+   }
+  
+   private ServiceConnection mConnection = new ServiceConnection() {
+       public void onServiceConnected(ComponentName className, IBinder service) {
+           mService = new Messenger(service);
+           tv.setText("Attached.");
+           try {
+               Message msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS);
+               msg.replyTo = mMessenger;
+               mService.send(msg);
+           } catch (RemoteException e) {
+               // In this case the service has crashed before we could even do anything with it
+        	   e.printStackTrace();
+           }
+       }
+
+       public void onServiceDisconnected(ComponentName className) {
+           // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
+           mService = null;
+           tv.setText("Disconnected.");
+       }
+   };
+   
    @Override
    public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -60,6 +107,7 @@ public class HostActivity extends Activity {
 	    ipAddressText = (TextView) findViewById(R.id.ipAddress);
 	    port = (EditText) findViewById(R.id.port);
 	    connectBtn = (ToggleButton) findViewById(R.id.toggleServer);
+	    backBtn = (Button) findViewById(R.id.backButton);
 	   
 		try {
 		    SERVERIP = getLocalIpAddress();
@@ -71,86 +119,89 @@ public class HostActivity extends Activity {
 		
 	    tv.setText("Nothing from client yet");
 
-    	myCommsThread = new Thread(new CommsThread());
+        backBtn.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Toast.makeText(getApplicationContext(), "mService: " + SocketServerService.isRunning() + ", mIsBound: " + mIsBound, Toast.LENGTH_LONG).show();
+			}
+        });
 
+		//startService(new Intent(HostActivity.this, SocketServerService.class));
+		
 	    connectBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 		        // Is the toggle on?
 		        boolean on = ((ToggleButton) v).isChecked();
 		        
-		        if (on) {
-		            // Enable vibrate
-		        	SERVERPORT = Integer.parseInt(port.getText().toString());
-		        	ipAddressText.setText("Port is " + SERVERPORT);
-		        	if(firstPress) {
-		        	    myCommsThread.start();
-		        	    firstPress = false;
-		        	}
-		        	else {
-			        	myCommsThread.interrupt();
-		        	}
-		        } else {
-		            // Disable vibrate
-		        	ipAddressText.setText("toggle off");
-		        	myCommsThread.interrupt();
-		        }
+	            // Enable vibrate
+	        	SERVERPORT = Integer.parseInt(port.getText().toString());
+	        	ipAddressText.setText("Port is " + SERVERPORT);
+
+	        	if(on) {
+	        		//Intent intent = new Intent(HostActivity.this, CharacterSelectActivity.class);
+	        	    //startActivity(intent);
+	        		doBindService();
+	        	}
+	        	else {
+	                doUnbindService();
+	        		stopService(new Intent(HostActivity.this, SocketServerService.class));
+	        		Toast.makeText(v.getContext(), "Stopping server...", Toast.LENGTH_LONG).show();
+	        	}
 		    }
 	    });
    }
- 
-   @Override
-   protected void onStop() {
-	    super.onStop();
-	    try {
-	        // make sure you close the socket upon exiting
-	        ss.close();
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    } catch (NullPointerException e) {
-	    	e.printStackTrace();
-	    }
+   
+   private void CheckIfServiceIsRunning() {
+       //If the service is running when the activity starts, we want to automatically bind to it.
+       if (SocketServerService.isRunning()) {
+           doBindService();
+       }
    }
- 
-   Handler myUpdateHandler = new Handler() {
-	    public void handleMessage(Message msg) {
-	        switch (msg.what) {
-	        case MSG_ID:
-	        	if(mClientMsg.equals("ConnectionSuccess/FriendCode")) {
-		        	 Intent i = new Intent(HostActivity.this, CharacterSelectActivity.class);
-		        	 startActivity(i);
-	        	}
-	            tv.setText(mClientMsg);
-	            break;
-	        default:
-	            break;
-	        }
-	        super.handleMessage(msg);
-	    }
-   };
+   
+   void doBindService() {
+       bindService(new Intent(this, SocketServerService.class).putExtra("SERVERPORT", SERVERPORT), mConnection, Context.BIND_AUTO_CREATE);
+       mIsBound = true;
+       tv.setText("Binding.");
+   }
+   void doUnbindService() {
+       if (mIsBound) {
+           // If we have received the service, and hence registered with it, then now is the time to unregister.
+           if (mService != null) {
+               try {
+                   Message msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS);
+                   msg.replyTo = mMessenger;
+                   mService.send(msg);
+               } catch (RemoteException e) {
+                   // There is nothing special we need to do if the service has crashed.
+               }
+           }
+           // Detach our existing connection.
+           unbindService(mConnection);
+           mIsBound = false;
+           tv.setText("Unbinding.");
+       }
+   }
+   
 
-   class CommsThread implements Runnable {
-		public void run() {
-	        Socket s = null;
-	        try {
-	            ss = new ServerSocket(SERVERPORT);
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	        while (!Thread.currentThread().isInterrupted()) {
-	            Message m = new Message();
-	            m.what = MSG_ID;
-	            try {
-	                if (s == null)
-	                    s = ss.accept();
-	                BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-	                String st = null;
-	                st = input.readLine();
-	                mClientMsg = st;
-	                myUpdateHandler.sendMessage(m);
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	            }
-	        }
-	    }
-    }
+   private void sendClientToService(String data) {
+       if (mIsBound) {
+           if (mService != null) {
+               try {
+                   Message msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS, data);
+                   msg.replyTo = mMessenger;
+                   mService.send(msg);
+               } catch (RemoteException e) {
+               }
+           }
+       }
+   }
+   
+   @Override
+   protected void onDestroy() {
+       super.onDestroy();
+       try {
+           doUnbindService();
+       } catch (Throwable t) {
+           Log.e("HostActivity", "Failed to unbind from the service", t);
+       }
+   }
 }

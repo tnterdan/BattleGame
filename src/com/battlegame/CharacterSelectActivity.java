@@ -101,7 +101,11 @@ public class CharacterSelectActivity extends Activity {
 	            	Message msg;
 	            	Bundle b = new Bundle();
 	            	// Send encrypted data
-	            	b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(Base64.encodeBytes(sMessageText.getText().toString().getBytes("US-ASCII")).getBytes("US-ASCII"))));
+		    		// First convert string to base 64
+		    		// Then use your private key to encrypt
+		    		// Then use public key from other guy to encrypt
+		    		// Turn that to base 64 again and send it
+	            	b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(RSAEncryption.rsaPrivateEncrypt(Base64.encodeBytes(sMessageText.getText().toString().getBytes("US-ASCII")).getBytes("US-ASCII")))));
 	            	if(type.equals("client")) {
 	            		msg = Message.obtain(null, SocketService.MSG_CHAR_SELECT);
 	            	}
@@ -146,7 +150,7 @@ public class CharacterSelectActivity extends Activity {
 	    	Bundle b = msg.getData();
 	    	String data = b.getString("data");
 	    	try {
-				rMessageText.setText(new String(Base64.decode(RSAEncryption.rsaDecrypt(Base64.decode(data)))));
+				rMessageText.setText(new String(Base64.decode(RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data))))));
 			} catch (InvalidKeyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

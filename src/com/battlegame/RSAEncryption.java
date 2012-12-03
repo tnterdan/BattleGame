@@ -82,4 +82,20 @@ public class RSAEncryption {
 		byte[] cipherData = cipher.doFinal(data);
 		return cipherData;
 	}
+	
+	public static byte[] rsaPrivateEncrypt(byte[] data) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		PrivateKey privKey = readPrivateKeyFromFile();
+		Cipher cipher = Cipher.getInstance("RSA");
+		cipher.init(Cipher.ENCRYPT_MODE, privKey);
+		byte[] cipherData = cipher.doFinal(data);
+		return cipherData;
+	}
+	
+	public static byte[] rsaPublicDecrypt(byte[] data) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		PublicKey pubKey = readPublicKeyFromFile();
+		Cipher cipher = Cipher.getInstance("RSA");
+		cipher.init(Cipher.DECRYPT_MODE, pubKey);
+		byte[] cipherData = cipher.doFinal(data);
+		return cipherData;
+	}
 }

@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import com.battlegame.HostActivity.IncomingHandler;
  
 import android.app.Activity;
 import android.content.ComponentName;
@@ -15,7 +17,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -31,12 +37,17 @@ public class ConnectActivity extends Activity {
 	protected TextView ipAddress;
 	protected TextView port;
 	protected Socket socket;
+	
+	int SERVERPORT = 6666;
+	String SERVERIP = "192.168.1.103";
 
 	// Server vars
-   private SocketService mBoundService;
-   private Boolean mIsBound = false;
-
+	private Boolean mIsBound = false;
+	Messenger mService = null;
+   
 	String mClientMsg = "";
+
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
 	   
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -56,7 +67,18 @@ public class ConnectActivity extends Activity {
 		 	         InetAddress serverAddr = InetAddress.getByName(ipAddress.getText().toString());		 	       
 		 	         //socket = new Socket(serverAddr, Integer.parseInt(port.getText().toString()));
 
-		             startService(new Intent(ConnectActivity.this, SocketService.class));
+		             //startService(new Intent(ConnectActivity.this, SocketService.class));
+		 	         
+		 	         SERVERIP = ipAddress.getText().toString();
+		 	         SERVERPORT = 6666;
+		 	         
+		 	         if(mIsBound) {
+		 	        	 doUnbindService();
+		 	        	 doBindService();
+		 	         }
+		 	         else {
+		 	        	 doBindService();
+		 	         }
 		         
 		 	         //connectionString = "Connection successful";
 			  	     //Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
@@ -102,7 +124,79 @@ public class ConnectActivity extends Activity {
                 Intent nextScreen = new Intent(getApplicationContext(), HostActivity.class);
                 startActivity(nextScreen);
             }
-        });
-        
+        });   
 	}
+	   
+	
+   private void characterSelect() {
+	   Intent intent = new Intent(ConnectActivity.this, CharacterSelectActivity.class);
+	   intent.putExtra("type", "client");
+       startActivity(intent);
+   }
+	   
+   class IncomingHandler extends Handler {
+       @Override
+       public void handleMessage(Message msg) {
+           switch (msg.what) {
+               case SocketService.MSG_CONNECT_SUCCESS:
+                   //Toast.makeText(getApplicationContext(), "Connection successful!", Toast.LENGTH_SHORT).show();
+                   characterSelect();
+                   break;
+               case SocketService.MSG_CHAR_SELECT:
+                   //Toast.makeText(getApplicationContext(), "Characters selected!", Toast.LENGTH_SHORT).show();
+                   break;
+               case SocketService.MSG_ATTACK:
+                   //Toast.makeText(getApplicationContext(), "Attack message!", Toast.LENGTH_SHORT).show();
+                   break;
+               default:
+                   super.handleMessage(msg);
+           }
+       }
+   }
+   
+	private ServiceConnection mConnection = new ServiceConnection() {
+       public void onServiceConnected(ComponentName className, IBinder service) {
+           mService = new Messenger(service);
+           tv.setText("Attached.");
+           try {
+               Message msg = Message.obtain(null, SocketService.MSG_CONNECT_SUCCESS);
+               msg.replyTo = mMessenger;
+               mService.send(msg);
+           } catch (RemoteException e) {
+               // In this case the service has crashed before we could even do anything with it
+        	   e.printStackTrace();
+           }
+       }
+
+       public void onServiceDisconnected(ComponentName className) {
+           // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
+           mService = null;
+           tv.setText("Disconnected.");
+       }
+   };
+	   
+    void doBindService() {
+        bindService(new Intent(this, SocketService.class).putExtra("SERVERPORT", SERVERPORT).putExtra("SERVERIP", SERVERIP), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+        tv.setText("Binding.");
+    }
+    
+    void doUnbindService() {
+        if (mIsBound) {
+            // If we have received the service, and hence registered with it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null, SocketService.MSG_CONNECT_SUCCESS);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service has crashed.
+                }
+            }
+            // Detach our existing connection.
+            unbindService(mConnection);
+            mIsBound = false;
+            tv.setText("Unbinding.");
+        }
+    }
 }

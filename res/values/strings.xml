@@ -22,5 +22,6 @@
     <string name="character_select_title">Choose a Character</string>
     <string name="unicorn_name">Unicorn</string>
     <string name="wyvern_name">Wyvern</string>
+    <string name="send_button">Send</string>
 
 </resources>

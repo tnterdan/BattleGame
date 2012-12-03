@@ -33,7 +33,7 @@ public class HostActivity extends Activity {
    private Button backBtn;
 
    // default ip
-   public static String SERVERIP = "192.168.1.101";
+   public static String SERVERIP = "192.168.1.103";
 
    // designate a port
    public static int SERVERPORT = 6666;
@@ -74,6 +74,7 @@ public class HostActivity extends Activity {
    
    private void characterSelect() {
 	   Intent intent = new Intent(HostActivity.this, CharacterSelectActivity.class);
+	   intent.putExtra("type", "server");
        startActivity(intent);
    }
   
@@ -95,7 +96,7 @@ public class HostActivity extends Activity {
            // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
            mService = null;
            tv.setText("Disconnected.");
-       }
+       } 
    };
    
    @Override
@@ -162,6 +163,7 @@ public class HostActivity extends Activity {
        mIsBound = true;
        tv.setText("Binding.");
    }
+
    void doUnbindService() {
        if (mIsBound) {
            // If we have received the service, and hence registered with it, then now is the time to unregister.

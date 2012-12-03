@@ -1,8 +1,11 @@
 package com.battlegame;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -20,6 +23,7 @@ public class SocketServerService extends Service {
 
 	Socket s;
     ServerSocket ss;
+    PrintWriter os;
 
     int SERVERPORT = 6666;
 
@@ -49,7 +53,16 @@ public class SocketServerService extends Service {
     class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            currentClient = msg.replyTo;
+        	switch (msg.what) {
+	    		case SocketServerService.MSG_CONNECT_SUCCESS:
+	    			currentClient = msg.replyTo;
+	    			break;
+	            case SocketServerService.MSG_CHAR_SELECT:
+	            	sendMsg(msg.getData().getString("data"));
+	                break;
+	            default:
+	                super.handleMessage(msg);
+	    	}
         }
     }
     
@@ -58,7 +71,13 @@ public class SocketServerService extends Service {
                 //Send data as a String
                 Bundle b = new Bundle();
                 b.putString("data", data);
-                Message msg = Message.obtain(null, MSG_CONNECT_SUCCESS);
+                Message msg;
+                if(data.equals("ConnectionSuccess/Seed")) {
+                	msg = Message.obtain(null, MSG_CONNECT_SUCCESS);
+                }
+                else {
+                	msg = Message.obtain(null, MSG_CHAR_SELECT);
+                }
                 msg.setData(b);
                 currentClient.send(msg);
 
@@ -67,12 +86,21 @@ public class SocketServerService extends Service {
             	e.printStackTrace();
             }
     }
+    
+    private void sendMsg(String msg) {
+        // Send initialization message containing random seed
+        try {
+        	//Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+			os = new PrintWriter(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())), true);
+	        os.println(msg);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Runnable connect = new connectSocket();
-        new Thread(connect).start();
         isRunning = true;
     }
 
@@ -115,8 +143,7 @@ public class SocketServerService extends Service {
 
     }
     
-    public static boolean isRunning()
-    {
+    public static boolean isRunning() {
         return isRunning;
     }
     

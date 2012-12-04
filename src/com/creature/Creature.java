@@ -71,7 +71,8 @@ public abstract class Creature {
 
 	// run this method at end of each turn to remove old effects and apply the damage
 	// also to set current defense, attack, accuracy, and speed
-	public void applyEffects() {
+	public String[] applyEffects() {
+		List<String> effectStrings = new ArrayList<String>();
 		Iterator<Effect> i = effectList.iterator();
 		while (i.hasNext()) {
 			Effect effect = i.next();
@@ -101,7 +102,7 @@ public abstract class Creature {
 				}
 			}
 			else {
-				System.out.println(effect.getMessage().replace("NAME", getName()));
+				effectStrings.add(effect.getMessage().replace("NAME", getName()));
 				switch (effect.attackType()) {
 					case DAMAGE:
 						setHealth(getHealth() - effect.getValue());
@@ -128,6 +129,7 @@ public abstract class Creature {
 				}
 			}
 		}
+		return (String[]) effectStrings.toArray();
 	}
 
 	public void setHealth(int health) {

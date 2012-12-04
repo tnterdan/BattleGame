@@ -150,26 +150,31 @@ public class BattleActivity extends Activity {
 		    		// Then use public key from other guy to encrypt
 		    		// Turn that to base 64 again and send it
 	            	String textToSend = "12";
+	            	byte[] sendInfo;
 	            	
 	            	if(argO.getId() == R.id.attack1) {
 	            		textToSend = "0";
+	            		sendInfo = new byte[] {2, 0};
 	            		yourAttackNum = 0;
 	            	}
 	            	else if(argO.getId() == R.id.attack2) {
 	            		textToSend = "1";
+	            		sendInfo = new byte[] {2, 1};
 	            		yourAttackNum = 1;
 	            	}
 	            	else {
 	            		textToSend = "2";
+	            		sendInfo = new byte[] {2, 2};
 	            		yourAttackNum = 2;
 	            	}
 	            	
-	            	b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(RSAEncryption.rsaPrivateEncrypt(Base64.encodeBytes(textToSend.getBytes("US-ASCII")).getBytes("US-ASCII")))));
+	            	//b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(RSAEncryption.rsaPrivateEncrypt(Base64.encodeBytes(textToSend.getBytes("US-ASCII")).getBytes("US-ASCII")))));
+	            	b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(sendInfo)));
 	            	if(type.equals("client")) {
-	            		msg = Message.obtain(null, SocketService.MSG_CHAR_SELECT);
+	            		msg = Message.obtain(null, SocketService.MSG_ATTACK);
 	            	}
 	            	else {
-	            		msg = Message.obtain(null, SocketServerService.MSG_CHAR_SELECT);
+	            		msg = Message.obtain(null, SocketServerService.MSG_ATTACK);
 	            	}
 	            	msg.setData(b);
 	                msg.replyTo = mMessenger;
@@ -271,8 +276,16 @@ public class BattleActivity extends Activity {
 			}
 		}
 
-		//yourCreature.applyEffects();
-		//enemyCreature.applyEffects();
+		//String[] yourEffects = yourCreature.applyEffects();
+		//String[] enemyEffects = enemyCreature.applyEffects();
+		
+//		for(String effectStr : yourEffects) {
+//			Toast.makeText(getApplicationContext(), effectStr, Toast.LENGTH_SHORT).show();
+//		}
+//		
+//		for(String effectStr : enemyEffects) {
+//			Toast.makeText(getApplicationContext(), effectStr, Toast.LENGTH_SHORT).show();
+//		}
 		
 		updateHealth();
 		
@@ -285,28 +298,41 @@ public class BattleActivity extends Activity {
 	class IncomingHandler extends Handler {
 	    @Override
 	    public void handleMessage(Message msg) {
-	    	if(msg.what == SocketService.MSG_ATTACK) {
+	    	//if(msg.what == SocketService.MSG_ATTACK) {
 		    	Bundle b = msg.getData();
 		    	String data = b.getString("data");
 		    	try {
-					String getText = new String(Base64.decode(RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data)))));
+					//String getText = new String(Base64.decode(RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data)))));
+					byte[] getInfo = RSAEncryption.rsaDecrypt(Base64.decode(data));
 				
-	            	if(getText.equals("0")) {
-	            		enemyAttackNum = 0;
-	            	}
-	            	else if(getText.equals("1")) {
-	        			enemyAttackNum = 1;
-	            	}
-	            	else {
-	            		enemyAttackNum = 2;
-	            	}
-	            	
-	            	if(yourAttackNum > -1 && enemyAttackNum > -1) {
-	            		executeTurn();
-	                }
-	                else {
-	                	battleMsg.setText("Opponent has chosen attack. Choose an attack!");
-	                }
+//	            	if(getText.equals("0")) {
+//	            		enemyAttackNum = 0;
+//	            	}
+//	            	else if(getText.equals("1")) {
+//	        			enemyAttackNum = 1;
+//	            	}
+//	            	else {
+//	            		enemyAttackNum = 2;
+//	            	}
+	            	 
+					if(getInfo[0] == 2) {
+		            	if(getInfo[1] == 0) {
+		            		enemyAttackNum = 0;
+		            	}
+		            	else if(getInfo[1] == 1) {
+		        			enemyAttackNum = 1;
+		            	}
+		            	else {
+		            		enemyAttackNum = 2;
+		            	}
+						
+		            	if(yourAttackNum > -1 && enemyAttackNum > -1) {
+		            		executeTurn();
+		                }
+		                else {
+		                	battleMsg.setText("Opponent has chosen attack. Choose an attack!");
+		                } 
+					}
 		    	} catch (InvalidKeyException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -327,7 +353,7 @@ public class BattleActivity extends Activity {
 					e.printStackTrace();
 				}
 	    	}
-	    }
+	    //}
 	}
 	private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {

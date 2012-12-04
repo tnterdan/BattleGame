@@ -46,7 +46,7 @@ public class SocketService extends Service {
     
     @Override
     public IBinder onBind(Intent arg0) {
-        Toast.makeText(this,"Client service created. Sending message...", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this,"Client service created. Sending message...", Toast.LENGTH_LONG).show();
         
         Runnable connect = new connectSocket();
         new Thread(connect).start();

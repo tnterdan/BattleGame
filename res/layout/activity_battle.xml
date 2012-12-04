@@ -1,46 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"  >
+
+        <ImageView
+            android:id="@+id/yourPicture"
+            android:layout_width="240dp"
+            android:layout_height="160dp"
+            android:contentDescription="@string/wyvern_name"
+            android:src="@drawable/lwyvern" />
+
+        <ImageView
+            android:id="@+id/enemyPicture"
+            android:layout_width="240dp"
+            android:layout_height="160dp"
+            android:contentDescription="@string/unicorn_name"
+            android:src="@drawable/runicorn" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"  >
+
+        <TextView
+            android:id="@+id/yourHealth"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="@string/unicorn_name" />
+
+        <TextView
+            android:id="@+id/enemyHealth"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="@string/wyvern_name" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/attack1"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/unicorn_name" />
+
+        <Button
+            android:id="@+id/attack2"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/wyvern_name" />
+
+        <Button
+            android:id="@+id/attack3"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/disconnect" />
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
+        android:id="@+id/battleMsg"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        tools:context=".MainActivity" />
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center"
+        android:text="@string/title_host_main" />
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="64dp"
-        android:layout_toRightOf="@+id/textView1"
-        android:onClick="onMyButtonClick" 
-        android:text="End" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/button1"
-        android:onClick="onMyButtonClick"
-        android:text="Kick" />
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button2"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/button2"
-        android:onClick="onMyButtonClick"
-        android:text="Punch" />
-
-</RelativeLayout>
+</LinearLayout>

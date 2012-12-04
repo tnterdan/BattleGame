@@ -33,6 +33,8 @@ public class SocketServerService extends Service {
     final static int MSG_CHAR_SELECT = 2;
     final static int MSG_ATTACK = 3;
     
+    int msgType;
+    
     private static boolean isRunning = false;
     
     final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -55,9 +57,13 @@ public class SocketServerService extends Service {
         public void handleMessage(Message msg) {
         	switch (msg.what) {
 	    		case SocketServerService.MSG_CONNECT_SUCCESS:
+        			msgType = msg.what;
 	    			currentClient = msg.replyTo;
 	    			break;
 	            case SocketServerService.MSG_CHAR_SELECT:
+	            case SocketServerService.MSG_ATTACK:
+        			msgType = msg.what;
+	    			currentClient = msg.replyTo;
 	            	sendMsg(msg.getData().getString("data"));
 	                break;
 	            default:
@@ -71,13 +77,7 @@ public class SocketServerService extends Service {
                 //Send data as a String
                 Bundle b = new Bundle();
                 b.putString("data", data);
-                Message msg;
-                if(data.equals("ConnectionSuccess/Seed")) {
-                	msg = Message.obtain(null, MSG_CONNECT_SUCCESS);
-                }
-                else {
-                	msg = Message.obtain(null, MSG_CHAR_SELECT);
-                }
+                Message msg = Message.obtain(null, msgType);
                 msg.setData(b);
                 currentClient.send(msg);
 

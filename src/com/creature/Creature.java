@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.Iterator;
 import java.lang.IllegalArgumentException;
 
-abstract class Creature {
+public abstract class Creature {
 	// Creature Name
 	private String name;
 

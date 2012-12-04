@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.app.Activity;
 //import android.content.Intent;
 import android.content.ComponentName;
@@ -40,8 +41,19 @@ public class CharacterSelectActivity extends Activity {
 	EditText sMessageText;
 	
 	String mClientMsg = "";
+	
+    String yourCharacter; 
+    String enemyCharacter;
 
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	
+	private void startGame() {
+		Intent i = new Intent(CharacterSelectActivity.this, BattleActivity.class);
+		i.putExtra("type", type);
+		i.putExtra("yourCharacter", yourCharacter);
+		i.putExtra("enemyCharacter", enemyCharacter);
+		startActivity(i);
+	}
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,6 +103,73 @@ public class CharacterSelectActivity extends Activity {
         	
         		//Intent i = new Intent(CharacterSelectActivity.this, BattleActivity.class);
         		//startActivity(i);
+	            try {
+	            	Message msg;
+	            	Bundle b = new Bundle();
+	            	// Send encrypted data
+		    		// First convert string to base 64
+		    		// Then use your private key to encrypt
+		    		// Then use public key from other guy to encrypt
+		    		// Turn that to base 64 again and send it
+	            	
+	            	// Unicorn = 0
+	            	// Wyvern = 1
+	            	String textToSend;
+	            	byte[] sendInfo;
+	            	
+	            	if(argO.getId() == R.id.unicornButton) {
+	            		textToSend = "01";
+	            		sendInfo = new byte[] {1, 0};
+	            		yourCharacter = "unicorn";
+	            	}
+	            	else {
+	            		textToSend = "11";
+	            		sendInfo = new byte[] {1, 1};
+	            		yourCharacter = "wyvern";
+	            	}
+	            	
+	            	//b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(RSAEncryption.rsaPrivateEncrypt(Base64.encodeBytes(textToSend.getBytes("US-ASCII")).getBytes("US-ASCII")))));
+	            	
+	            	b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(RSAEncryption.rsaPrivateEncrypt(sendInfo))));
+	            	
+	            	if(type.equals("client")) {
+	            		msg = Message.obtain(null, SocketService.MSG_CHAR_SELECT);
+	            	}
+	            	else {
+	            		msg = Message.obtain(null, SocketServerService.MSG_CHAR_SELECT);
+	            	}
+	            	msg.setData(b);
+	                msg.replyTo = mMessenger;
+	                mService.send(msg);
+	                
+	                if(yourCharacter != null && enemyCharacter != null) {
+	                	startGame();
+	                }
+	                else {
+	                	Toast.makeText(getApplicationContext(), "Waiting for opponent (" + yourCharacter + ")...", Toast.LENGTH_LONG).show();
+	                }
+	            } catch (RemoteException e) {
+	                // In this case the service has crashed before we could even do anything with it
+	         	   e.printStackTrace();
+	            } catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalBlockSizeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (BadPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
         	}
         };
         
@@ -139,7 +218,7 @@ public class CharacterSelectActivity extends Activity {
 				}
 			}
         });
-        
+         
         unicornButton.setOnClickListener(selectListner);
         wyvernButton.setOnClickListener(selectListner);
     }
@@ -147,29 +226,54 @@ public class CharacterSelectActivity extends Activity {
 	class IncomingHandler extends Handler {
 	    @Override
 	    public void handleMessage(Message msg) {
-	    	Bundle b = msg.getData();
-	    	String data = b.getString("data");
-	    	try {
-				rMessageText.setText(new String(Base64.decode(RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data))))));
-			} catch (InvalidKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	    	//if(msg.what == SocketService.MSG_CHAR_SELECT) {
+		    	Bundle b = msg.getData();
+		    	String data = b.getString("data");
+		    	try {
+					//String getText = new String(Base64.decode(RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data)))));
+					byte[] getInfo = RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data)));
+//	            	if(getText.substring(0, 1).equals("0")) {
+//	            		enemyCharacter = "unicorn";
+//	            	}
+//	            	else {
+//	            		enemyCharacter = "wyvern";
+//	            	}
+					if(getInfo[0] == 1) {
+						
+						if(getInfo[1] == 0) {
+							enemyCharacter = "unicorn";
+						}
+						else {
+							enemyCharacter = "wyvern";
+						}
+						
+		            	if(yourCharacter != null && enemyCharacter != null) {
+		            		startGame();
+		                }
+		                else {
+		                	Toast.makeText(getApplicationContext(), "Opponent has chosen (" + enemyCharacter + "). Waiting for you...", Toast.LENGTH_LONG).show();
+		                }
+					}
+		    	} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalBlockSizeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (BadPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    	//}
 //	        switch (msg.what) {
 //	            case SocketService.MSG_CONNECT_SUCCESS:
 //	                //Toast.makeText(getApplicationContext(), "Connection successful!", Toast.LENGTH_SHORT).show();
@@ -193,10 +297,10 @@ public class CharacterSelectActivity extends Activity {
             try {
             	Message msg;
             	if(type.equals("client")) {
-            		msg = Message.obtain(null, SocketService.MSG_CONNECT_SUCCESS);
+            		msg = Message.obtain(null, SocketService.MSG_CHAR_SELECT);
             	}
             	else {
-            		msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS);
+            		msg = Message.obtain(null, SocketServerService.MSG_CHAR_SELECT);
             	}
                 msg.replyTo = mMessenger;
                 mService.send(msg);
@@ -231,10 +335,10 @@ public class CharacterSelectActivity extends Activity {
                  try {
                  	Message msg;
                  	if(type.equals("client")) {
-                		msg = Message.obtain(null, SocketService.MSG_CONNECT_SUCCESS);
+                		msg = Message.obtain(null, SocketService.MSG_CHAR_SELECT);
                  	}
                  	else {
-                		msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS);
+                		msg = Message.obtain(null, SocketServerService.MSG_CHAR_SELECT);
                  	}
                  	msg.replyTo = mMessenger;
                  	mService.send(msg);

@@ -31,14 +31,14 @@
            android:name="FriendsActivity"
            android:label="@string/title_activity_main">
        </activity>
-       <activity 
-           android:name=".BattleActivity"
-           android:label="@string/title_activity_main"
-           android:screenOrientation="landscape">   
-       </activity>
        <activity
             android:name=".CharacterSelectActivity"
             android:label="@string/title_activity_main" >
+       </activity>
+       <activity
+            android:name="com.battlegame.BattleActivity"
+            android:label="@string/title_activity_main"
+            android:screenOrientation="landscape" >
        </activity>
   	  <service android:name=".SocketService"> </service>
   	  <service android:name=".SocketServerService"> </service>

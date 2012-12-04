@@ -40,6 +40,8 @@ public class SocketService extends Service {
     final static int MSG_CHAR_SELECT = 2;
     final static int MSG_ATTACK = 3;
     
+    int msgType;
+    
     final Messenger mMessenger = new Messenger(new IncomingHandler());
     
     @Override
@@ -66,9 +68,13 @@ public class SocketService extends Service {
         public void handleMessage(Message msg) {
         	switch (msg.what) {
         		case SocketService.MSG_CONNECT_SUCCESS:
+        			msgType = msg.what;
         			currentClient = msg.replyTo;
         			break;
 	            case SocketService.MSG_CHAR_SELECT:
+	            case SocketServerService.MSG_ATTACK:
+        			msgType = msg.what;
+	    			currentClient = msg.replyTo;
 	            	sendMsg(msg.getData().getString("data"));
 	                break;
 	            default:
@@ -79,7 +85,7 @@ public class SocketService extends Service {
     
     @Override
     public void onCreate() {
-        super.onCreate();
+        super.onCreate(); 
         isRunning = true;
     }
 
@@ -93,18 +99,14 @@ public class SocketService extends Service {
             //Toast.makeText(this,"derp derp derp.", Toast.LENGTH_LONG).show();
             Bundle b = new Bundle();
             b.putString("data", data);
-            Message msg;
-            if(data.equals("ConnectionSuccess/Seed")) {
-            	msg = Message.obtain(null, MSG_CONNECT_SUCCESS);
-            }
-            else {
-            	msg = Message.obtain(null, MSG_CHAR_SELECT);
-            }
+            Message msg = Message.obtain(null, msgType);
             msg.setData(b);
             currentClient.send(msg);
 
         } catch (RemoteException e) {
             // The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
+        	e.printStackTrace();
+        } catch (Exception e) {
         	e.printStackTrace();
         }
 }
@@ -115,25 +117,19 @@ public class SocketService extends Service {
  
     class connectSocket implements Runnable {
         public void run() {
-            //SocketAddress socketAddress = new InetSocketAddress(SERVERIP, SERVERPORT);
             try {               
                 s = new Socket(SERVERIP, SERVERPORT);
-                //s.connect(socketAddress);
                 sendMsg("ConnectionSuccess/Seed");
                 sendMessageToUI("ConnectionSuccess/Seed");
             } catch (IOException e) {
                 e.printStackTrace();
             }
             while (!Thread.currentThread().isInterrupted() && s != null) {
-                //Message m = new Message();
-                //m.what = MSG_CONNECT_SUCCESS;
                 try {
                     BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     String st = null;
                     st = input.readLine();
                     sendMessageToUI(st);
-                    //mClientMsg = st;
-                    //myUpdateHandler.sendMessage(m);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -145,7 +141,6 @@ public class SocketService extends Service {
     private void sendMsg(String msg) {
         // Send initialization message containing random seed
         try {
-        	//Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 			os = new PrintWriter(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())), true);
 	        os.println(msg);
 		} catch (IOException e) {

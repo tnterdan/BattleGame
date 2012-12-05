@@ -19,6 +19,9 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.widget.Toast;
 
+
+//code from http://www.edumobile.org/android/android-development/socket-programming/
+//code from http://stackoverflow.com/questions/3619372/android-service-for-tcp-sockets
 public class SocketServerService extends Service {
 
 	Socket s;
@@ -44,7 +47,6 @@ public class SocketServerService extends Service {
     	SERVERPORT = intent.getIntExtra("SERVERPORT", 6666);
     	
         Toast.makeText(this, "Waiting for client to connect...", Toast.LENGTH_LONG).show();
-        //Toast.makeText(this, new Boolean(isRunning).toString(), Toast.LENGTH_SHORT).show();
 
         Runnable connect = new connectSocket();
         new Thread(connect).start();
@@ -90,7 +92,6 @@ public class SocketServerService extends Service {
     private void sendMsg(String msg) {
         // Send initialization message containing random seed
         try {
-        	//Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 			os = new PrintWriter(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())), true);
 	        os.println(msg);
 		} catch (IOException e) {
@@ -111,12 +112,10 @@ public class SocketServerService extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        //return START_STICKY;
     }
 
     class connectSocket implements Runnable {
         public void run() {
-            //Toast.makeText(getApplicationContext(), "Waiting for client to connect..." + SERVERPORT, Toast.LENGTH_LONG).show();
             try {
     	        ss = new ServerSocket(SERVERPORT);	
             } catch (IOException e) {
@@ -124,8 +123,6 @@ public class SocketServerService extends Service {
             }
             // Might be a race condition when terminating thread
             while (!Thread.currentThread().isInterrupted() && ss != null) {
-                //Message m = new Message();
-                //m.what = MSG_CONNECT_SUCCESS;
                 try {
                     if (s == null)
                         s = ss.accept();
@@ -133,8 +130,6 @@ public class SocketServerService extends Service {
                     String st = null;
                     st = input.readLine();
                     sendMessageToUI(st);
-                    //mClientMsg = st;
-                    //myUpdateHandler.sendMessage(m);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

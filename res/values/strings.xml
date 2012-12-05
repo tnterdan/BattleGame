@@ -23,5 +23,6 @@
     <string name="unicorn_name">Unicorn</string>
     <string name="wyvern_name">Wyvern</string>
     <string name="send_button">Send</string>
+    <string name="default_port">6666</string>
 
 </resources>

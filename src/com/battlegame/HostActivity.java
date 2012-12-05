@@ -31,9 +31,11 @@ public class HostActivity extends Activity {
    private EditText port;
    private static TextView tv;
    private Button backBtn;
+   
+   int seed;
 
-   // default ip
-   public static String SERVERIP = "192.168.1.103";
+   // default IP Address
+   public static String SERVERIP = "192.168.1.101";
 
    // designate a port
    public static int SERVERPORT = 6666;
@@ -57,14 +59,7 @@ public class HostActivity extends Activity {
        public void handleMessage(Message msg) {
            switch (msg.what) {
                case SocketServerService.MSG_CONNECT_SUCCESS:
-                   //Toast.makeText(getApplicationContext(), "Connection successful!", Toast.LENGTH_SHORT).show();
-                   characterSelect();
-                   break;
-               case SocketServerService.MSG_CHAR_SELECT:
-                   //Toast.makeText(getApplicationContext(), "Characters selected!", Toast.LENGTH_SHORT).show();
-                   break;
-               case SocketServerService.MSG_ATTACK:
-                   //Toast.makeText(getApplicationContext(), "Attack message!", Toast.LENGTH_SHORT).show();
+            	   characterSelect();
                    break;
                default:
                    super.handleMessage(msg);
@@ -81,7 +76,6 @@ public class HostActivity extends Activity {
    private ServiceConnection mConnection = new ServiceConnection() {
        public void onServiceConnected(ComponentName className, IBinder service) {
            mService = new Messenger(service);
-           tv.setText("Attached.");
            try {
                Message msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS);
                msg.replyTo = mMessenger;
@@ -95,7 +89,6 @@ public class HostActivity extends Activity {
        public void onServiceDisconnected(ComponentName className) {
            // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
            mService = null;
-           tv.setText("Disconnected.");
        } 
    };
    
@@ -109,6 +102,15 @@ public class HostActivity extends Activity {
 	    port = (EditText) findViewById(R.id.port);
 	    connectBtn = (ToggleButton) findViewById(R.id.toggleServer);
 	    backBtn = (Button) findViewById(R.id.backButton);
+	    
+        // Set to use client/server key for encryption/decryption
+        // This assumes only two users total
+        // Also must create asset manager to open the files with
+        
+        RSAEncryption.assetMgr = this.getAssets();
+
+    	RSAEncryption.publicKeyType = "client";
+    	RSAEncryption.privateKeyType = "server";
 	   
 		try {
 		    SERVERIP = getLocalIpAddress();
@@ -122,24 +124,20 @@ public class HostActivity extends Activity {
 
         backBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Toast.makeText(getApplicationContext(), "mService: " + SocketServerService.isRunning() + ", mIsBound: " + mIsBound, Toast.LENGTH_LONG).show();
+				finish();
 			}
         });
-
-		//startService(new Intent(HostActivity.this, SocketServerService.class));
 		
 	    connectBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 		        // Is the toggle on?
 		        boolean on = ((ToggleButton) v).isChecked();
-		        
+		         
 	            // Enable vibrate
 	        	SERVERPORT = Integer.parseInt(port.getText().toString());
 	        	ipAddressText.setText("Port is " + SERVERPORT);
 
 	        	if(on) {
-	        		//Intent intent = new Intent(HostActivity.this, CharacterSelectActivity.class);
-	        	    //startActivity(intent);
 	        		doBindService();
 	        	}
 	        	else {
@@ -151,17 +149,9 @@ public class HostActivity extends Activity {
 	    });
    }
    
-   private void CheckIfServiceIsRunning() {
-       //If the service is running when the activity starts, we want to automatically bind to it.
-       if (SocketServerService.isRunning()) {
-           doBindService();
-       }
-   }
-   
    void doBindService() {
        bindService(new Intent(this, SocketServerService.class).putExtra("SERVERPORT", SERVERPORT), mConnection, Context.BIND_AUTO_CREATE);
        mIsBound = true;
-       tv.setText("Binding.");
    }
 
    void doUnbindService() {
@@ -179,24 +169,10 @@ public class HostActivity extends Activity {
            // Detach our existing connection.
            unbindService(mConnection);
            mIsBound = false;
-           tv.setText("Unbinding.");
        }
    }
    
 
-   private void sendClientToService(String data) {
-       if (mIsBound) {
-           if (mService != null) {
-               try {
-                   Message msg = Message.obtain(null, SocketServerService.MSG_CONNECT_SUCCESS, data);
-                   msg.replyTo = mMessenger;
-                   mService.send(msg);
-               } catch (RemoteException e) {
-               }
-           }
-       }
-   }
-   
    @Override
    protected void onDestroy() {
        super.onDestroy();

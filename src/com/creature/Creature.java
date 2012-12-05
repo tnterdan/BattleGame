@@ -69,8 +69,8 @@ public abstract class Creature {
 		effectList.add(effect);
 	}
 
-	// run this method at end of each turn to remove old effects and apply the damage
-	// also to set current defense, attack, accuracy, and speed
+	// Run this method at end of each turn to remove old effects and apply the damage
+	// Also to set current defense, attack, accuracy, and speed
 	public String[] applyEffects() {
 		List<String> effectStrings = new ArrayList<String>();
 		Iterator<Effect> i = effectList.iterator();

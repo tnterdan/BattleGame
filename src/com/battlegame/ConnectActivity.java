@@ -1,15 +1,6 @@
 package com.battlegame;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-
-import com.battlegame.HostActivity.IncomingHandler;
  
 import android.app.Activity;
 import android.content.ComponentName;
@@ -22,13 +13,14 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
 
+//code from http://www.edumobile.org/android/android-development/socket-programming/
+//code from http://stackoverflow.com/questions/3619372/android-service-for-tcp-sockets
 public class ConnectActivity extends Activity {
 	// Client vars
 	protected Button connectBtn;
@@ -38,8 +30,10 @@ public class ConnectActivity extends Activity {
 	protected TextView port;
 	protected Socket socket;
 	
-	int SERVERPORT = 6666;
-	String SERVERIP = "192.168.1.103";
+	int SERVERPORT;
+	String SERVERIP;
+	
+	int seed;
 
 	// Server vars
 	private Boolean mIsBound = false;
@@ -58,19 +52,23 @@ public class ConnectActivity extends Activity {
 		tv = (TextView) findViewById(R.id.myTextView);
 		ipAddress = (TextView) findViewById(R.id.ipAddress);
 		port = (TextView) findViewById(R.id.port);
+		
+        // Set to use client/server key for encryption/decryption
+        // This assumes only two users total
+        // Also must create asset manager to open the files with
+        
+        RSAEncryption.assetMgr = this.getAssets();
+
+        RSAEncryption.publicKeyType = "server";
+        RSAEncryption.privateKeyType = "client";
+        
 		connectBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				CharSequence connectionString = "Waiting to connect to " + ipAddress.getText();
 				Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
-
-		  	    try {
-		 	         InetAddress serverAddr = InetAddress.getByName(ipAddress.getText().toString());		 	       
-		 	         //socket = new Socket(serverAddr, Integer.parseInt(port.getText().toString()));
-
-		             //startService(new Intent(ConnectActivity.this, SocketService.class));
-		 	         
+		  	    try {  
 		 	         SERVERIP = ipAddress.getText().toString();
-		 	         SERVERPORT = 6666;
+		 	         SERVERPORT = Integer.parseInt(port.getText().toString());
 		 	         
 		 	         if(mIsBound) {
 		 	        	 doUnbindService();
@@ -78,34 +76,8 @@ public class ConnectActivity extends Activity {
 		 	         }
 		 	         else {
 		 	        	 doBindService();
-		 	         }
-		         
-		 	         //connectionString = "Connection successful";
-			  	     //Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
-			         try {
-			        	 //PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-			        	 //out.println("ConnectionSuccess/FriendCode");
-			        	 Log.d("Client", "Client sent message");
-//			         } catch (UnknownHostException e) {
-//			        	 tv.setText("Unknown Host Exception");
-//			        	 e.printStackTrace();
-//			         } catch (IOException e) {
-//			        	 tv.setText("IO Exception");
-//			        	 e.printStackTrace();
-			         }
-			         catch (Exception e) {
-			        	 tv.setText("Unknown Exception");
-			        	 e.printStackTrace();
-			         }
-		  	    } catch (UnknownHostException e1) {
-		  	    	connectionString = "Unknown host";
-			        Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
-			        e1.printStackTrace();
-		  	    } catch (IOException e1) {
-		  	    	connectionString = "Could not connect";
-		  	    	Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
-		 	        e1.printStackTrace();
-		 	    }
+		 	         }		       
+		  	    }
 		  	    catch (NumberFormatException e1) {
 		  	    	connectionString = "Invalid IP Address/Port";
 		  	    	Toast.makeText(v.getContext(), connectionString, Toast.LENGTH_LONG).show();
@@ -131,6 +103,7 @@ public class ConnectActivity extends Activity {
    private void characterSelect() {
 	   Intent intent = new Intent(ConnectActivity.this, CharacterSelectActivity.class);
 	   intent.putExtra("type", "client");
+	   intent.putExtra("seed", seed);
        startActivity(intent);
    }
 	   
@@ -139,14 +112,7 @@ public class ConnectActivity extends Activity {
        public void handleMessage(Message msg) {
            switch (msg.what) {
                case SocketService.MSG_CONNECT_SUCCESS:
-                   //Toast.makeText(getApplicationContext(), "Connection successful!", Toast.LENGTH_SHORT).show();
-                   characterSelect();
-                   break;
-               case SocketService.MSG_CHAR_SELECT:
-                   //Toast.makeText(getApplicationContext(), "Characters selected!", Toast.LENGTH_SHORT).show();
-                   break;
-               case SocketService.MSG_ATTACK:
-                   //Toast.makeText(getApplicationContext(), "Attack message!", Toast.LENGTH_SHORT).show();
+            	   characterSelect();
                    break;
                default:
                    super.handleMessage(msg);
@@ -157,7 +123,6 @@ public class ConnectActivity extends Activity {
 	private ServiceConnection mConnection = new ServiceConnection() {
        public void onServiceConnected(ComponentName className, IBinder service) {
            mService = new Messenger(service);
-           tv.setText("Attached.");
            try {
                Message msg = Message.obtain(null, SocketService.MSG_CONNECT_SUCCESS);
                msg.replyTo = mMessenger;
@@ -171,14 +136,12 @@ public class ConnectActivity extends Activity {
        public void onServiceDisconnected(ComponentName className) {
            // This is called when the connection with the service has been unexpectedly disconnected - process crashed.
            mService = null;
-           tv.setText("Disconnected.");
        }
    };
 	   
     void doBindService() {
         bindService(new Intent(this, SocketService.class).putExtra("SERVERPORT", SERVERPORT).putExtra("SERVERIP", SERVERIP), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
-        tv.setText("Binding.");
     }
     
     void doUnbindService() {
@@ -196,7 +159,6 @@ public class ConnectActivity extends Activity {
             // Detach our existing connection.
             unbindService(mConnection);
             mIsBound = false;
-            tv.setText("Unbinding.");
         }
     }
 }

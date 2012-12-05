@@ -11,8 +11,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import com.battlegame.ConnectActivity.IncomingHandler;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,15 +18,11 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
-//import android.content.Intent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -47,6 +41,10 @@ public class BattleActivity extends Activity {
 	
 	Creature yourCreature;
 	Creature enemyCreature;
+	
+	Button attack1;
+    Button attack2;
+    Button attack3;
 	
     TextView yourHealth;
     TextView enemyHealth;
@@ -71,9 +69,9 @@ public class BattleActivity extends Activity {
         ImageView yourPicture = (ImageView) findViewById(R.id.yourPicture);
         ImageView enemyPicture = (ImageView) findViewById(R.id.enemyPicture);
         
-        Button attack1 = (Button) findViewById(R.id.attack1);
-        Button attack2 = (Button) findViewById(R.id.attack2);
-        Button attack3 = (Button) findViewById(R.id.attack3);
+        attack1 = (Button) findViewById(R.id.attack1);
+        attack2 = (Button) findViewById(R.id.attack2);
+        attack3 = (Button) findViewById(R.id.attack3);
         
         yourHealth = (TextView) findViewById(R.id.yourHealth);
         enemyHealth = (TextView) findViewById(R.id.enemyHealth);
@@ -82,10 +80,11 @@ public class BattleActivity extends Activity {
         
         Bundle extras = getIntent().getExtras();
         type = extras.getString("type");
+        seed = extras.getInt("seed");
         yourCharacter = extras.getString("yourCharacter");
         enemyCharacter = extras.getString("enemyCharacter");
         
-        seed = 1234567;
+        seed = 1234567890;
         
         if(yourCharacter.equals("unicorn")) {
         	yourPicture.setImageResource(R.drawable.lunicorn);
@@ -114,7 +113,6 @@ public class BattleActivity extends Activity {
     	enemyHealth.setText(enemyCreature.getHealth() + "/" + enemyCreature.getMaxHealth());
         
     	battleMsg.setText("Choose an attack!");
-        //rMessageText.setText(type);
          
         // Set to use client/server key for encryption/decryption
         // This assumes only two users total
@@ -149,26 +147,21 @@ public class BattleActivity extends Activity {
 		    		// Then use your private key to encrypt
 		    		// Then use public key from other guy to encrypt
 		    		// Turn that to base 64 again and send it
-	            	String textToSend = "12";
 	            	byte[] sendInfo;
 	            	
 	            	if(argO.getId() == R.id.attack1) {
-	            		textToSend = "0";
 	            		sendInfo = new byte[] {2, 0};
 	            		yourAttackNum = 0;
 	            	}
 	            	else if(argO.getId() == R.id.attack2) {
-	            		textToSend = "1";
 	            		sendInfo = new byte[] {2, 1};
 	            		yourAttackNum = 1;
 	            	}
 	            	else {
-	            		textToSend = "2";
 	            		sendInfo = new byte[] {2, 2};
 	            		yourAttackNum = 2;
 	            	}
 	            	
-	            	//b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(RSAEncryption.rsaPrivateEncrypt(Base64.encodeBytes(textToSend.getBytes("US-ASCII")).getBytes("US-ASCII")))));
 	            	b.putString("data", Base64.encodeBytes(RSAEncryption.rsaEncrypt(sendInfo)));
 	            	if(type.equals("client")) {
 	            		msg = Message.obtain(null, SocketService.MSG_ATTACK);
@@ -191,22 +184,16 @@ public class BattleActivity extends Activity {
 	                // In this case the service has crashed before we could even do anything with it
 	         	   e.printStackTrace();
 	            } catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (NoSuchPaddingException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IllegalBlockSizeException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (BadPaddingException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
  			}
@@ -276,8 +263,8 @@ public class BattleActivity extends Activity {
 			}
 		}
 
-		//String[] yourEffects = yourCreature.applyEffects();
-		//String[] enemyEffects = enemyCreature.applyEffects();
+//		String[] yourEffects = yourCreature.applyEffects();
+//		String[] enemyEffects = enemyCreature.applyEffects();
 		
 //		for(String effectStr : yourEffects) {
 //			Toast.makeText(getApplicationContext(), effectStr, Toast.LENGTH_SHORT).show();
@@ -289,7 +276,27 @@ public class BattleActivity extends Activity {
 		
 		updateHealth();
 		
-		battleMsg.setText("Choose an attack!");
+		if(!yourCreature.isAlive() && !enemyCreature.isAlive()) {
+			battleMsg.setText("Both creatures have been defeated! It's a tie!");
+	        attack1.setEnabled(false);
+	        attack2.setEnabled(false);
+	        attack3.setEnabled(false);
+		}
+		else if(!yourCreature.isAlive()) {
+			battleMsg.setText(yourCreature.getName() + " has been defeated! You lose!");
+	        attack1.setEnabled(false);
+	        attack2.setEnabled(false);
+	        attack3.setEnabled(false);
+		}
+		else if(!enemyCreature.isAlive()) {
+			battleMsg.setText(enemyCreature.getName() + " has been defeated! You win!");
+	        attack1.setEnabled(false);
+	        attack2.setEnabled(false);
+	        attack3.setEnabled(false);
+		}
+		else {
+			battleMsg.setText("Choose an attack!");
+		}
 		
 		yourAttackNum = -1;
 		enemyAttackNum = -1;
@@ -298,63 +305,45 @@ public class BattleActivity extends Activity {
 	class IncomingHandler extends Handler {
 	    @Override
 	    public void handleMessage(Message msg) {
-	    	//if(msg.what == SocketService.MSG_ATTACK) {
-		    	Bundle b = msg.getData();
-		    	String data = b.getString("data");
-		    	try {
-					//String getText = new String(Base64.decode(RSAEncryption.rsaPublicDecrypt(RSAEncryption.rsaDecrypt(Base64.decode(data)))));
-					byte[] getInfo = RSAEncryption.rsaDecrypt(Base64.decode(data));
-				
-//	            	if(getText.equals("0")) {
-//	            		enemyAttackNum = 0;
-//	            	}
-//	            	else if(getText.equals("1")) {
-//	        			enemyAttackNum = 1;
-//	            	}
-//	            	else {
-//	            		enemyAttackNum = 2;
-//	            	}
-	            	 
-					if(getInfo[0] == 2) {
-		            	if(getInfo[1] == 0) {
-		            		enemyAttackNum = 0;
-		            	}
-		            	else if(getInfo[1] == 1) {
-		        			enemyAttackNum = 1;
-		            	}
-		            	else {
-		            		enemyAttackNum = 2;
-		            	}
-						
-		            	if(yourAttackNum > -1 && enemyAttackNum > -1) {
-		            		executeTurn();
-		                }
-		                else {
-		                	battleMsg.setText("Opponent has chosen attack. Choose an attack!");
-		                } 
-					}
-		    	} catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchPaddingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalBlockSizeException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (BadPaddingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+	    	Bundle b = msg.getData();
+	    	String data = b.getString("data");
+	    	try {
+				byte[] getInfo = RSAEncryption.rsaDecrypt(Base64.decode(data));
+
+				if(getInfo[0] == 2) {
+	            	if(getInfo[1] == 0) {
+	            		enemyAttackNum = 0;
+	            	}
+	            	else if(getInfo[1] == 1) {
+	        			enemyAttackNum = 1;
+	            	}
+	            	else {
+	            		enemyAttackNum = 2;
+	            	}
+					
+	            	if(yourAttackNum > -1 && enemyAttackNum > -1) {
+	            		executeTurn();
+	                }
+	                else {
+	                	battleMsg.setText("Opponent has chosen attack. Choose an attack!");
+	                } 
 				}
-	    	}
-	    //}
+	    	} catch (InvalidKeyException e) {
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
 	}
+	
 	private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);

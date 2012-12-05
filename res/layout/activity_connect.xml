@@ -11,23 +11,62 @@
     android:id="@+id/myTextView"
 />
 
-<EditText
-    android:id="@+id/ipAddress"
+<TableLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:ems="10"
-    android:hint="@string/ip_address" >
+    android:layout_gravity="center_horizontal" >
 
-    <requestFocus />
-</EditText>
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
 
-<EditText
-    android:id="@+id/port"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:ems="10"
-    android:hint="@string/port"
-    android:inputType="number" />
+        <TextView
+            android:id="@+id/ipAddressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="4dp"
+            android:text="@string/ip_address"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/ipAddress"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/ip_address" />
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/portText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="4dp"
+            android:text="@string/port"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/port"
+            android:inputType="number"
+            android:text="@string/default_port" />
+
+    </TableRow>
+</TableLayout>
 
 <Button
     android:id="@+id/sendButton"

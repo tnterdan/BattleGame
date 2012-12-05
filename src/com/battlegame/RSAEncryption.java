@@ -1,7 +1,6 @@
 package com.battlegame;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -79,22 +78,6 @@ public class RSAEncryption {
 		PrivateKey privKey = readPrivateKeyFromFile();
 		Cipher cipher = Cipher.getInstance("RSA");
 		cipher.init(Cipher.DECRYPT_MODE, privKey);
-		byte[] cipherData = cipher.doFinal(data);
-		return cipherData;
-	}
-	
-	public static byte[] rsaPrivateEncrypt(byte[] data) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		PrivateKey privKey = readPrivateKeyFromFile();
-		Cipher cipher = Cipher.getInstance("RSA");
-		cipher.init(Cipher.ENCRYPT_MODE, privKey);
-		byte[] cipherData = cipher.doFinal(data);
-		return cipherData;
-	}
-	
-	public static byte[] rsaPublicDecrypt(byte[] data) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		PublicKey pubKey = readPublicKeyFromFile();
-		Cipher cipher = Cipher.getInstance("RSA");
-		cipher.init(Cipher.DECRYPT_MODE, pubKey);
 		byte[] cipherData = cipher.doFinal(data);
 		return cipherData;
 	}

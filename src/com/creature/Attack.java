@@ -19,26 +19,32 @@ public class Attack {
 		this.effect = effect;
 	}
 
+	// Attack name
 	public String getName() {
 		return name;
 	}
 
+	// Attack description
 	public String getDesc() {
 		return desc;
 	}
 
+	// Attack battle message
 	public String getEffectDesc() {
 		return effectDesc;
 	}
 
+	// Attack's target
 	public Target getTarget() {
 		return target;
 	}
 
+	// Attack's base damage
 	public int getBaseDamage() {
 		return baseDamage;
 	}
 
+	// Attack's effect
 	public Effect getEffect() {
 		return effect;
 	}
